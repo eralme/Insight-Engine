@@ -130,4 +130,56 @@ class InsightEngine:
         for chunk in response:
             if "answer" in chunk:
                 yield chunk["answer"]
-                
+
+    def retrieve_context(self, query: str, chat_history: List[dict]) -> List[Document]:
+        """
+        Retrieves relevant documents using the history-aware logic.
+        Detailed for debugging retrieval quality.
+        """
+        llm = ChatOpenAI(model="gpt-4-turbo", temperature=0)
+
+        # Same contextualization logic as before
+        contextualize_q_system_prompt = """Given a chat history and the latest user question
+        which might reference context in the chat history, formulate a standalone question
+        which can be understood without the chat history. Do NOT answer the question,
+        just reformulate it if needed and otherwise return it as is."""
+
+        contextualize_q_prompt = ChatPromptTemplate.from_messages([
+            ("system", contextualize_q_system_prompt),
+            MessagesPlaceholder("chat_history"),
+            ("human", "{input}"),
+        ])
+
+        history_aware_retriever = create_history_aware_retriever(
+            llm, self.vector_store.as_retriever(), contextualize_q_prompt
+        )
+
+        # Execute retrieval only
+        return history_aware_retriever.invoke({"input": query, "chat_history": chat_history})
+
+    def generate_answer(self, query: str, context: List[Document], chat_history: List[dict]):
+        """
+        Generates the answer using the PRE-RETRIEVED context.
+        """
+        llm = ChatOpenAI(model="gpt-4-turbo", temperature=0, streaming=True)
+
+        qa_system_prompt = """You are an assistant for Question-Answering tasks.
+        Use the following pieces of retrieved context to answer the question.
+        If you don't know the answer, just say that you don't know.
+
+        Context:
+        {context}"""
+
+        qa_prompt = ChatPromptTemplate.from_messages([
+            ("system", qa_system_prompt),
+            MessagesPlaceholder("chat_history"),
+            ("human", "{input}"),
+        ])
+
+        # We use a simple chain here because we already have the docs
+        chain = create_stuff_documents_chain(llm, qa_prompt)
+
+        # Stream the output
+        for chunk in chain.stream({"context": context, "input": query, "chat_history": chat_history}):
+            # 'create_stuff_documents_chain' output structure is simpler
+            yield chunk

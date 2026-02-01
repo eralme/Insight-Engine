@@ -77,15 +77,29 @@ if prompt := st.chat_input("Ask a technical question about the uploaded docs..."
 
     # 4. Retrieval & Generation
     with st.chat_message("assistant"):
-        with st.spinner("Retrieving context..."):
-            # Retrieve relevant chunks
-            docs = st.session_state.engine.query_engine(prompt)
+        # 1. Prepare History
+        lc_history = []
+        for msg in st.session_state.chat_history:
+            role = "human" if msg["role"] == "user" else "ai"
+            lc_history.append((role, msg["content"]))
 
-            # TODO: We will build the LLM Chain in the next step.
-            # For now, let's show the retrieved context to verify the RAG logic.
-            context_preview = "\n\n".join([f"**Source (Page {d.metadata.get('page', '?')}):** {d.page_content[:200]}..." for d in docs])
-            response = f"I found {len(docs)} relevant segments. \n\n {context_preview}"
+        # 2. Retrieve Context First (Explicit Step)
+        with st.spinner("Analyzing documents..."):
+            context_docs = st.session_state.engine.retrieve_context(prompt, lc_history)
 
-            st.markdown(response)
-            st.session_state.chat_history.append({"role": "assistant", "content": response})
+        # 3. Stream Answer
+        response_stream = st.session_state.engine.generate_answer(prompt, context_docs, lc_history)
+        full_response = st.write_stream(response_stream)
+
+        # 4. Display Citations (The Enterprise Feature)
+        with st.expander("📚 View Source Documents"):
+            for i, doc in enumerate(context_docs):
+                source_name = doc.metadata.get("source", "Unknown")
+                page_num = doc.metadata.get("page", "?")
+                st.markdown(f"**Source {i+1}:** {source_name} (Page {page_num})")
+                st.caption(doc.page_content[:300] + "...")  # Preview first 300 chars
+                st.divider()
+
+        # 5. Save to History
+        st.session_state.chat_history.append({"role": "assistant", "content": full_response})
             
