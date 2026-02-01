@@ -1,10 +1,6 @@
 # InsightEngine: Enterprise-Grade RAG System
 
-<p align="center">
-  <a href="https://insight-engine-lndychhed8zm5vkhn8nemp.streamlit.app/" target="_blank">
-    <img src="https://img.shields.io/badge/Live%20Demo-Try%20InsightEngine-FF4B4B?style=for-the-badge&logo=streamlit" alt="Live Demo">
-  </a>
-</p>
+**Live Demo:** <a href="https://insight-engine-lndychhed8zm5vkhn8nemp.streamlit.app/" target="_blank">https://insight-engine-lndychhed8zm5vkhn8nemp.streamlit.app/</a>
 
 InsightEngine is a document retrieval system built to bridge the gap between static knowledge bases (PDFs) and conversational AI. 
 
