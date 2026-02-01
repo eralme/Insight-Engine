@@ -131,19 +131,3 @@ class InsightEngine:
             if "answer" in chunk:
                 yield chunk["answer"]
                 
-            
-        # 4. Retrieval & Generation
-        # with st.chat_message("assistant"):
-        #     # Helper to convert session state to LangChain format
-        #     # LangChain expects tuples or objects, but simple dicts often work with newer versions.
-        #     # Ideally: [("human", "msg"), ("ai", "msg")]
-        #     lc_history = []
-        #     for msg in st.session_state.chat_history:
-        #         lc_history.append(( "human" if msg["role"] == "user" else "ai", msg["content"]))
-
-        #     # Stream the response
-        #     response_stream = st.session_state.engine.get_streaming_response(prompt, lc_history)
-        #     full_response = st.write_stream(response_stream)
-            
-        #     # Save to history
-        #     st.session_state.chat_history.append({"role": "assistant", "content": full_response})

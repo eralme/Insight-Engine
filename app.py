@@ -58,11 +58,11 @@ if prompt := st.chat_input("Ask a technical question about the uploaded docs..."
         with st.spinner("Retrieving context..."):
             # Retrieve relevant chunks
             docs = st.session_state.engine.query_engine(prompt)
-            
-            # TODO: We will build the LLM Chain in the next step. 
+
+            # TODO: We will build the LLM Chain in the next step.
             # For now, let's show the retrieved context to verify the RAG logic.
             context_preview = "\n\n".join([f"**Source (Page {d.metadata.get('page', '?')}):** {d.page_content[:200]}..." for d in docs])
             response = f"I found {len(docs)} relevant segments. \n\n {context_preview}"
-            
+
             st.markdown(response)
             st.session_state.chat_history.append({"role": "assistant", "content": response})
