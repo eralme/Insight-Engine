@@ -4,6 +4,9 @@ import os
 import shutil
 from rag_engine import InsightEngine
 
+# BRIDGE: If running on Streamlit Cloud, map secrets to env vars for LangChain
+if "OPENAI_API_KEY" in st.secrets:
+    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 # Page Config for a professional look
 st.set_page_config(page_title="InsightEngine | AI Engineering Portfolio", layout="wide")
