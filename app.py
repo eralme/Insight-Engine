@@ -1,7 +1,9 @@
 import streamlit as st
 import tempfile
 import os
+import shutil
 from rag_engine import InsightEngine
+
 
 # Page Config for a professional look
 st.set_page_config(page_title="InsightEngine | AI Engineering Portfolio", layout="wide")
@@ -37,6 +39,26 @@ with st.sidebar:
                     st.success("Knowledge base updated!")
                 else:
                     st.error("Ingestion failed. Check logs.")
+    st.markdown("---")
+    if st.button("⚠️ Reset Knowledge Base"):
+        if os.path.exists("./chroma_db"):
+            # 1. Clear the Vector Store from Memory
+            # (Chroma's client can hold locks, so we try to force a release)
+            st.session_state.engine.vector_store = None
+            del st.session_state.engine
+            
+            # 2. Delete the Directory
+            try:
+                shutil.rmtree("./chroma_db")
+                st.success("Database cleared!")
+                
+                # 3. Refresh the App to Re-initialize
+                st.session_state.clear()
+                st.rerun() 
+            except Exception as e:
+                st.error(f"Error clearing DB: {e}. \nTry stopping the app in terminal.")
+        else:
+            st.info("Database is already empty.")
 
 # 3. Main Chat Interface
 st.subheader("Query the Knowledge Base")
@@ -66,3 +88,4 @@ if prompt := st.chat_input("Ask a technical question about the uploaded docs..."
 
             st.markdown(response)
             st.session_state.chat_history.append({"role": "assistant", "content": response})
+            
